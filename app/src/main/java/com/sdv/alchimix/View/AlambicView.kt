@@ -53,11 +53,9 @@ fun AlambicMainView(
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
-    // RÉCUPÉRATION DES LISTES DEPUIS LE VIEWMODEL
     val baseItemsList by viewModel.alcoholicBases.collectAsStateWithLifecycle()
     val chaosItemsList by viewModel.nonAlcoholicEssences.collectAsStateWithLifecycle()
 
-    // LISTES SÉCURISÉES (Au cas où l'API n'a pas encore fini de charger)
     val safeBaseItems = if (baseItemsList.isNotEmpty()) baseItemsList else listOf("Gin", "Vodka", "Rum")
     val safeChaosItems = if (chaosItemsList.isNotEmpty()) chaosItemsList else listOf("Lemon", "Sugar", "Mint")
 
@@ -80,7 +78,6 @@ fun AlambicMainView(
         }
     }
 
-    // --- NOUVEAU: Shake Detector ---
     val context = LocalContext.current
     DisposableEffect(Unit) {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -102,7 +99,6 @@ fun AlambicMainView(
                     if (now - lastShakeTime > 1500) {
                         lastShakeTime = now
                         if (!isSpinning && !isAlchemyLoading) {
-                            // Déclenche le bouton
                             isSpinning = true
                             onSpinStart()
 

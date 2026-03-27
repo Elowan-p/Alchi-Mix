@@ -60,7 +60,6 @@ fun AlchemyExperimentAnimation(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        // Sacred Geometry Background Effect
         Canvas(modifier = Modifier.fillMaxSize()) {
             val center = Offset(size.width / 2, size.height / 2 - 50.dp.toPx())
             for (i in 1..4) {

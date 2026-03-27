@@ -50,7 +50,6 @@ class CocktailViewModel(application: Application) : AndroidViewModel(application
     private val _ingredientDetails = MutableStateFlow<IngredientDTO?>(null)
     val ingredientDetails: StateFlow<IngredientDTO?> = _ingredientDetails.asStateFlow()
 
-    // --- NOUVEAU : États pour le Splash Screen ---
     private val _isAppReady = MutableStateFlow(false)
     val isAppReady: StateFlow<Boolean> = _isAppReady.asStateFlow()
 
@@ -100,7 +99,6 @@ class CocktailViewModel(application: Application) : AndroidViewModel(application
             } else {
                 Log.d("VM", "Téléchargement initial obligatoire ou reprise.")
                 
-                // 1. Ingrédients de 0% à 50%
                 if (countIngredients < 488) {
                     repository.syncAllPossibleIngredients(
                         onProgress = { _initProgress.value = it * 0.5f },
@@ -197,7 +195,7 @@ class CocktailViewModel(application: Application) : AndroidViewModel(application
             in 51..150 -> "Souffleur de Verre 🔥"
             in 151..300 -> "Maître des Essences ✨"
             in 301..488 -> "Grand Alchimiste 🧙‍♂️"
-            else -> "DIEU DE L'ALCHIMIE 👑" // Pour 489 précisément (ou plus)
+            else -> "DIEU DE L'ALCHIMIE 👑"
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Novice du Chaos 🧪")
 

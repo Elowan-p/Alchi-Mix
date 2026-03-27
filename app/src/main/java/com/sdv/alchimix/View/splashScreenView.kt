@@ -34,7 +34,6 @@ fun SplashScreenView(progress: Float) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(32.dp)
         ) {
-            // Le "Logo" animé
             Text(
                 text = "⚗️",
                 fontSize = 80.sp,
@@ -58,7 +57,6 @@ fun SplashScreenView(progress: Float) {
                 modifier = Modifier.padding(top = 8.dp, bottom = 48.dp)
             )
 
-            // Barre de chargement stylisée
             Column(modifier = Modifier.fillMaxWidth(0.8f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

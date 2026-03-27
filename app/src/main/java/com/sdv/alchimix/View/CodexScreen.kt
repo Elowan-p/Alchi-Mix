@@ -194,13 +194,12 @@ fun EssencesTab(viewModel: CocktailViewModel) {
     val discoveredIngredients by viewModel.discoveredIngredients.collectAsStateWithLifecycle()
     val ingredientDetails by viewModel.ingredientDetails.collectAsStateWithLifecycle()
 
-    // NOUVEAU : Récupération des listes séparées pour le filtrage
     val alcoholicBases by viewModel.alcoholicBases.collectAsStateWithLifecycle()
     val nonAlcoholicEssences by viewModel.nonAlcoholicEssences.collectAsStateWithLifecycle()
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedRarity by remember { mutableStateOf<Rarity?>(null) }
-    var selectedType by remember { mutableStateOf("TOUT") } // "TOUT", "ALCOOL", "ESSENCE"
+    var selectedType by remember { mutableStateOf("TOUT") }
 
     var showDialog by remember { mutableStateOf(false) }
     var pageSize by remember { mutableIntStateOf(30) }
@@ -211,7 +210,6 @@ fun EssencesTab(viewModel: CocktailViewModel) {
                 val matchesSearch = name.contains(searchQuery, ignoreCase = true)
                 val matchesRarity = selectedRarity == null || Rarity.getIngredientRarity(name) == selectedRarity
 
-                // NOUVEAU : Filtre par type d'ingrédient
                 val matchesType = when (selectedType) {
                     "ALCOOL" -> alcoholicBases.contains(name)
                     "ESSENCE" -> nonAlcoholicEssences.contains(name)
@@ -259,7 +257,6 @@ fun EssencesTab(viewModel: CocktailViewModel) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // NOUVEAU : Boutons de filtre par Type
                 Row(
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -286,7 +283,6 @@ fun EssencesTab(viewModel: CocktailViewModel) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Filtre de Rareté
                 RarityFilterRow(selectedRarity) { selectedRarity = it }
 
                 Spacer(modifier = Modifier.height(16.dp))

@@ -11,25 +11,25 @@ sealed interface Rarity : Comparable<Rarity> {
 
     object LEGENDARY : Rarity {
         override val name = "LÉGENDAIRE"
-        override val color = Color(0xFFFFD700) // Or
+        override val color = Color(0xFFFFD700)
         override val rank = 3
     }
 
     object EPIC : Rarity {
         override val name = "ÉPIQUE"
-        override val color = Color(0xFF9400D3) // Violet
+        override val color = Color(0xFF9400D3)
         override val rank = 2
     }
 
     object RARE : Rarity {
         override val name = "RARE"
-        override val color = Color(0xFF1E90FF) // Bleu
+        override val color = Color(0xFF1E90FF)
         override val rank = 1
     }
 
     object COMMON : Rarity {
         override val name = "COMMUN"
-        override val color = Color(0xFF808080) // Gris
+        override val color = Color(0xFF808080)
         override val rank = 0
     }
 
@@ -55,10 +55,10 @@ sealed interface Rarity : Comparable<Rarity> {
             val normalizedScore = if (hashScore < 0) -hashScore else hashScore
 
             return when {
-                normalizedScore > 96 -> LEGENDARY // 3% au lieu de 5%
-                normalizedScore > 86 -> EPIC      // 10% au lieu de 15%
-                normalizedScore > 59 -> RARE      // 27% au lieu de 30%
-                else -> COMMON                    // 60% au lieu de 50%
+                normalizedScore > 96 -> LEGENDARY
+                normalizedScore > 86 -> EPIC
+                normalizedScore > 59 -> RARE
+                else -> COMMON
             }
         }
 
