@@ -19,9 +19,12 @@ interface CocktailDao {
     @Query("UPDATE cocktails SET deletedAt = :date WHERE id = :id")
     suspend fun softDelete(id: Int, date: Date)
 
-    @Query("SELECT * FROM cocktails WHERE deletedAt IS NULL ORDER BY createdAt DESC")
+    @Query("SELECT COUNT(*) FROM cocktails")
+    suspend fun getCocktailCount(): Int
+
+    @Query("SELECT * FROM cocktails WHERE isDiscovered = 1 AND deletedAt IS NULL ORDER BY createdAt DESC")
     fun getAllVisibleCocktails(): Flow<List<CocktailEntity>>
 
-    @Query("SELECT * FROM cocktails WHERE isFavorite = 1 AND deletedAt IS NULL ORDER BY createdAt DESC")
+    @Query("SELECT * FROM cocktails WHERE isFavorite = 1 AND isDiscovered = 1 AND deletedAt IS NULL ORDER BY createdAt DESC")
     fun getFavoriteCocktails(): Flow<List<CocktailEntity>>
 }

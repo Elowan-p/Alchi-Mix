@@ -79,21 +79,42 @@ class CocktailViewModel(application: Application) : AndroidViewModel(application
         }
 
         viewModelScope.launch(Dispatchers.IO) {
-            val count = repository.getIngredientCount()
+            val countIngredients = repository.getIngredientCount()
+            val countCocktails = try { repository.getCocktailCount() } catch (e: Exception) { 0 }
 
-            if (count >= 488) {
-                Log.d("VM", "Données déjà présentes ($count). Lancement du fake loading.")
+            val totalExpectedIngredients = 488
+            val totalExpectedCocktails = 600
+
+            if (countIngredients >= totalExpectedIngredients && countCocktails >= totalExpectedCocktails) {
+                Log.d("VM", "Données déjà présentes (Ing: $countIngredients, Cocktails: $countCocktails). Lancement fake loading.")
                 for (i in 1..100) {
                     _initProgress.value = i / 100f
-                    delay(50)
+                    delay(15)
                 }
                 _isAppReady.value = true
             } else {
-                Log.d("VM", "Premier lancement : téléchargement initial obligatoire.")
-                repository.syncAllPossibleIngredients(
-                    onProgress = { _initProgress.value = it },
-                    isBackground = false
-                )
+                Log.d("VM", "Téléchargement initial obligatoire.")
+                
+                // 1. Ingrédients de 0% à 50%
+                if (countIngredients < totalExpectedIngredients) {
+                    repository.syncAllPossibleIngredients(
+                        onProgress = { _initProgress.value = it * 0.5f },
+                        isBackground = false
+                    )
+                } else {
+                    _initProgress.value = 0.5f
+                }
+
+                // 2. Cocktails de 50% à 100%
+                if (countCocktails < totalExpectedCocktails) {
+                    repository.syncAllPossibleCocktails(
+                        onProgress = { _initProgress.value = 0.5f + (it * 0.5f) },
+                        isBackground = false
+                    )
+                } else {
+                    _initProgress.value = 1f
+                }
+
                 _isAppReady.value = true
             }
         }

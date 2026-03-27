@@ -16,6 +16,7 @@ data class CocktailEntity(
     val imageUrl: String? = null,
     val category: String? = "Cocktail",
     val isFavorite: Boolean = false,
+    val isDiscovered: Boolean = false,
     val ingredients: String? = null,
     val measures: String? = null,
     val createdAt: Date = Date(),

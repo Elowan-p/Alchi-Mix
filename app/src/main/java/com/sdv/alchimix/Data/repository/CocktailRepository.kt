@@ -26,6 +26,7 @@ class CocktailRepository(
     fun getAllIngredients(): Flow<List<IngredientEntity>> = ingredientDao.getAllIngredients()
 
     suspend fun getIngredientCount(): Int = ingredientDao.getIngredientCount()
+    suspend fun getCocktailCount(): Int = cocktailDao.getCocktailCount()
 
     suspend fun syncAllPossibleIngredients(
         onProgress: (Float) -> Unit,
@@ -53,6 +54,51 @@ class CocktailRepository(
         }
     }
 
+    suspend fun syncAllPossibleCocktails(
+        onProgress: (Float) -> Unit,
+        isBackground: Boolean
+    ) = withContext(Dispatchers.IO) {
+        try {
+            val total = 11600 - 11000 + 1
+            for (id in 11000..11600) {
+                try {
+                    val response = RetrofitInstance.api.getById(id.toString())
+                    val cocktail = response.drinks?.firstOrNull()
+
+                    if (cocktail != null) {
+                        val name = cocktail.strDrink.trim()
+                        val existing = cocktailDao.getByName(name)
+                        if (existing == null) {
+                            val ingredientsString = cocktail.getIngredients().joinToString(",")
+                            val measuresString = listOfNotNull(
+                                cocktail.strMeasure1, cocktail.strMeasure2, cocktail.strMeasure3, cocktail.strMeasure4,
+                                cocktail.strMeasure5, cocktail.strMeasure6, cocktail.strMeasure7, cocktail.strMeasure8
+                            ).joinToString(",")
+
+                            cocktailDao.insert(
+                                CocktailEntity(
+                                    name = name,
+                                    instructions = cocktail.strInstructions ?: "Aucune instruction",
+                                    imageUrl = cocktail.strDrinkThumb,
+                                    category = cocktail.strCategory,
+                                    ingredients = ingredientsString,
+                                    measures = measuresString,
+                                    isDiscovered = false
+                                )
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                }
+                onProgress((id - 11000 + 1).toFloat() / total.toFloat())
+                delay(if (isBackground) 300L else 150L)
+            }
+            Log.d("CocktailRepository", "Synchronisation des cocktails terminée.")
+        } catch (e: Exception) {
+            Log.e("CocktailRepository", "Erreur lors du scraping des cocktails", e)
+        }
+    }
+
     suspend fun getIngredientDetails(name: String): Result<IngredientDTO?> = withContext(Dispatchers.IO) {
         try {
             val response = RetrofitInstance.api.searchIngredientByName(name)
@@ -74,7 +120,8 @@ class CocktailRepository(
         cocktailDao.insert(CocktailEntity(
             name = name,
             instructions = instructions,
-            category = "Custom"
+            category = "Custom",
+            isDiscovered = true
         ))
     }
 
@@ -95,7 +142,8 @@ class CocktailRepository(
                     imageUrl = cocktail.strDrinkThumb,
                     category = cocktail.strCategory,
                     ingredients = ingredientsString,
-                    measures = measuresString
+                    measures = measuresString,
+                    isDiscovered = true
                 )
             )
         } else {
@@ -105,6 +153,7 @@ class CocktailRepository(
                     category = cocktail.strCategory,
                     ingredients = ingredientsString,
                     measures = measuresString,
+                    isDiscovered = true,
                     updatedAt = Date()
                 )
             )
@@ -125,6 +174,7 @@ class CocktailRepository(
                 isFavorite = !existing.isFavorite,
                 deletedAt = null,
                 updatedAt = Date(),
+                isDiscovered = true,
                 ingredients = ingredientsString,
                 measures = measuresString
             ))
@@ -134,6 +184,7 @@ class CocktailRepository(
                 instructions = cocktail.strInstructions ?: "Aucune instruction",
                 imageUrl = cocktail.strDrinkThumb,
                 isFavorite = true,
+                isDiscovered = true,
                 category = cocktail.strCategory,
                 ingredients = ingredientsString,
                 measures = measuresString
