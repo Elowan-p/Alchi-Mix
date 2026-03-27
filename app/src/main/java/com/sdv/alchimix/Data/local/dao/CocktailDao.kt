@@ -22,6 +22,9 @@ interface CocktailDao {
     @Query("SELECT COUNT(*) FROM cocktails")
     suspend fun getCocktailCount(): Int
 
+    @Query("SELECT COUNT(*) FROM cocktails")
+    fun getCocktailCountFlow(): Flow<Int>
+
     @Query("SELECT * FROM cocktails WHERE isDiscovered = 1 AND deletedAt IS NULL ORDER BY createdAt DESC")
     fun getAllVisibleCocktails(): Flow<List<CocktailEntity>>
 

@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -66,7 +67,7 @@ fun FullFormulaView(
                 Surface(
                     color = rarity.color.copy(alpha = 0.9f),
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp).shadow(12.dp, RoundedCornerShape(8.dp), spotColor = rarity.color)
                 ) {
                     Text(
                         text = rarity.name,

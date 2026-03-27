@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,6 +45,8 @@ fun LaboratoireScreen(viewModel: CocktailViewModel) {
     } else null
 
     if (selectedLocalCocktail != null) {
+        val ing = selectedLocalCocktail.ingredients?.split(",")?.map { it.trim() } ?: emptyList()
+        val meas = selectedLocalCocktail.measures?.split(",")?.map { it.trim() } ?: emptyList()
         val dto = CocktailDTO(
             idDrink = selectedLocalCocktail.id.toString(),
             strDrink = selectedLocalCocktail.name,
@@ -52,14 +55,14 @@ fun LaboratoireScreen(viewModel: CocktailViewModel) {
             strCategory = selectedLocalCocktail.category ?: "Cocktail",
             strAlcoholic = null,
             strGlass = "Cristal",
-            strIngredient1 = null, strIngredient2 = null, strIngredient3 = null, strIngredient4 = null,
-            strIngredient5 = null, strIngredient6 = null, strIngredient7 = null, strIngredient8 = null,
-            strIngredient9 = null, strIngredient10 = null, strIngredient11 = null, strIngredient12 = null,
-            strIngredient13 = null, strIngredient14 = null, strIngredient15 = null,
-            strMeasure1 = null, strMeasure2 = null, strMeasure3 = null, strMeasure4 = null,
-            strMeasure5 = null, strMeasure6 = null, strMeasure7 = null, strMeasure8 = null,
-            strMeasure9 = null, strMeasure10 = null, strMeasure11 = null, strMeasure12 = null,
-            strMeasure13 = null, strMeasure14 = null, strMeasure15 = null
+            strIngredient1 = ing.getOrNull(0), strIngredient2 = ing.getOrNull(1), strIngredient3 = ing.getOrNull(2), strIngredient4 = ing.getOrNull(3),
+            strIngredient5 = ing.getOrNull(4), strIngredient6 = ing.getOrNull(5), strIngredient7 = ing.getOrNull(6), strIngredient8 = ing.getOrNull(7),
+            strIngredient9 = ing.getOrNull(8), strIngredient10 = ing.getOrNull(9), strIngredient11 = ing.getOrNull(10), strIngredient12 = ing.getOrNull(11),
+            strIngredient13 = ing.getOrNull(12), strIngredient14 = ing.getOrNull(13), strIngredient15 = ing.getOrNull(14),
+            strMeasure1 = meas.getOrNull(0), strMeasure2 = meas.getOrNull(1), strMeasure3 = meas.getOrNull(2), strMeasure4 = meas.getOrNull(3),
+            strMeasure5 = meas.getOrNull(4), strMeasure6 = meas.getOrNull(5), strMeasure7 = meas.getOrNull(6), strMeasure8 = meas.getOrNull(7),
+            strMeasure9 = meas.getOrNull(8), strMeasure10 = meas.getOrNull(9), strMeasure11 = meas.getOrNull(10), strMeasure12 = meas.getOrNull(11),
+            strMeasure13 = meas.getOrNull(12), strMeasure14 = meas.getOrNull(13), strMeasure15 = meas.getOrNull(14)
         )
         FullFormulaView(
             cocktail = dto,
@@ -76,7 +79,7 @@ fun LaboratoireScreen(viewModel: CocktailViewModel) {
         ) {
             Text(
                 text = "LE LABORATOIRE",
-                color = AlambicCyan,
+                color = BrassGold,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp
@@ -96,8 +99,8 @@ fun LaboratoireScreen(viewModel: CocktailViewModel) {
                 placeholder = { Text("Rechercher dans le grimoire...", color = Color.Gray) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = AlambicCyan) },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = AlambicPurple,
-                    unfocusedBorderColor = Color.DarkGray,
+                    focusedBorderColor = BrassGold,
+                    unfocusedBorderColor = Color.White.copy(0.1f),
                     cursorColor = AlambicCyan,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White
@@ -119,9 +122,15 @@ fun LaboratoireScreen(viewModel: CocktailViewModel) {
                         onClick = { selectedFilter = filter },
                         label = { Text(if (filter == "Favoris") "♥ $filter" else filter) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = AlambicPurple.copy(alpha = 0.3f),
-                            selectedLabelColor = AlambicPurple,
+                            selectedContainerColor = BrassGold.copy(alpha = 0.2f),
+                            selectedLabelColor = BrassGold,
                             labelColor = Color.Gray
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            borderColor = Color.Gray.copy(alpha = 0.3f),
+                            selectedBorderColor = BrassGold,
+                            enabled = true,
+                            selected = selectedFilter == filter
                         )
                     )
                 }
@@ -131,11 +140,33 @@ fun LaboratoireScreen(viewModel: CocktailViewModel) {
 
             Button(
                 onClick = { showAddForm = !showAddForm },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = if (showAddForm) Color.DarkGray else AlambicCyan),
-                shape = RoundedCornerShape(12.dp)
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                shape = RoundedCornerShape(12.dp),
+                contentPadding = PaddingValues()
             ) {
-                Text(if (showAddForm) "Annuler" else "Nouvelle Formule", color = Color.Black, fontWeight = FontWeight.Bold)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.horizontalGradient(
+                                if (showAddForm) listOf(Color(0xFF333333), Color(0xFF111111))
+                                else listOf(Color(0xFF8B5A00), Color(0xFFE69110))
+                            )
+                        )
+                        .border(1.dp, if (showAddForm) Color.Gray else BrassGold, RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        if (showAddForm) "ANNULER LA FORMULE" else "GRAVER UNE NOUVELLE FORMULE",
+                        color = if (showAddForm) Color.LightGray else Color(0xFFFFD1A3),
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp,
+                        style = androidx.compose.ui.text.TextStyle(
+                            shadow = androidx.compose.ui.graphics.Shadow(color = Color.Black.copy(0.8f), blurRadius = 4f)
+                        )
+                    )
+                }
             }
 
             if (showAddForm) {
@@ -259,7 +290,7 @@ fun CocktailItem(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = CardBg),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+        border = BorderStroke(1.dp, if (cocktail.isFavorite) BrassGold.copy(alpha = 0.5f) else Color.White.copy(alpha = 0.05f))
     ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -334,13 +365,16 @@ fun EmptyLaboratoryView() {
         verticalArrangement = Arrangement.Center
     ) {
         Box(
-            modifier = Modifier.size(100.dp).background(AlambicPurple.copy(alpha = 0.1f), RoundedCornerShape(20.dp)).border(2.dp, AlambicPurple.copy(alpha = 0.3f), RoundedCornerShape(20.dp)),
+            modifier = Modifier
+                .size(100.dp)
+                .background(Color(0xFF121215), RoundedCornerShape(20.dp))
+                .border(2.dp, Color(0xFFC9A66B).copy(alpha = 0.3f), RoundedCornerShape(20.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text("🧪", fontSize = 48.sp)
         }
         Spacer(modifier = Modifier.height(24.dp))
-        Text(text = "Votre laboratoire est vide", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-        Text(text = "Découvrez des cocktails via l'alambic", color = Color.Gray, fontSize = 14.sp)
+        Text(text = "Le Laboratoire est vide", color = BrassGold, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text(text = "Découvrez des essences d'abord.", color = Color.Gray, fontSize = 14.sp)
     }
 }

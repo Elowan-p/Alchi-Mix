@@ -27,6 +27,7 @@ class CocktailRepository(
 
     suspend fun getIngredientCount(): Int = ingredientDao.getIngredientCount()
     suspend fun getCocktailCount(): Int = cocktailDao.getCocktailCount()
+    fun getCocktailCountFlow(): Flow<Int> = cocktailDao.getCocktailCountFlow()
 
     suspend fun syncAllPossibleIngredients(
         onProgress: (Float) -> Unit,
@@ -59,39 +60,45 @@ class CocktailRepository(
         isBackground: Boolean
     ) = withContext(Dispatchers.IO) {
         try {
-            val total = 11600 - 11000 + 1
-            for (id in 11000..11600) {
-                try {
-                    val response = RetrofitInstance.api.getById(id.toString())
-                    val cocktail = response.drinks?.firstOrNull()
+            val chars = ('a'..'z') + ('0'..'9')
+            val total = chars.size
+            for ((index, c) in chars.withIndex()) {
+                var success = false
+                var retries = 0
+                while (!success && retries < 4) {
+                    try {
+                        val response = RetrofitInstance.api.getByFirstLetter(c.toString())
+                        response.drinks?.forEach { cocktail ->
+                            val name = cocktail.strDrink.trim()
+                            val existing = cocktailDao.getByName(name)
+                            if (existing == null) {
+                                val ingredientsString = cocktail.getIngredients().joinToString(",")
+                                val measuresString = listOfNotNull(
+                                    cocktail.strMeasure1, cocktail.strMeasure2, cocktail.strMeasure3, cocktail.strMeasure4,
+                                    cocktail.strMeasure5, cocktail.strMeasure6, cocktail.strMeasure7, cocktail.strMeasure8
+                                ).joinToString(",")
 
-                    if (cocktail != null) {
-                        val name = cocktail.strDrink.trim()
-                        val existing = cocktailDao.getByName(name)
-                        if (existing == null) {
-                            val ingredientsString = cocktail.getIngredients().joinToString(",")
-                            val measuresString = listOfNotNull(
-                                cocktail.strMeasure1, cocktail.strMeasure2, cocktail.strMeasure3, cocktail.strMeasure4,
-                                cocktail.strMeasure5, cocktail.strMeasure6, cocktail.strMeasure7, cocktail.strMeasure8
-                            ).joinToString(",")
-
-                            cocktailDao.insert(
-                                CocktailEntity(
-                                    name = name,
-                                    instructions = cocktail.strInstructions ?: "Aucune instruction",
-                                    imageUrl = cocktail.strDrinkThumb,
-                                    category = cocktail.strCategory,
-                                    ingredients = ingredientsString,
-                                    measures = measuresString,
-                                    isDiscovered = false
+                                cocktailDao.insert(
+                                    CocktailEntity(
+                                        name = name,
+                                        instructions = cocktail.strInstructions ?: "Aucune instruction",
+                                        imageUrl = cocktail.strDrinkThumb,
+                                        category = cocktail.strCategory,
+                                        ingredients = ingredientsString,
+                                        measures = measuresString,
+                                        isDiscovered = false
+                                    )
                                 )
-                            )
+                            }
                         }
+                        success = true
+                    } catch (e: Exception) {
+                        retries++
+                        delay(2500L) // Backoff if HTTP 429 Too Many Requests
                     }
-                } catch (e: Exception) {
                 }
-                onProgress((id - 11000 + 1).toFloat() / total.toFloat())
-                delay(if (isBackground) 300L else 150L)
+                onProgress((index + 1).toFloat() / total.toFloat())
+                delay(if (isBackground) 1000L else 400L)
             }
             Log.d("CocktailRepository", "Synchronisation des cocktails terminée.")
         } catch (e: Exception) {

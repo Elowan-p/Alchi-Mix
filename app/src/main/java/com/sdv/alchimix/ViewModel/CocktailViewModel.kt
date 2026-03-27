@@ -57,6 +57,9 @@ class CocktailViewModel(application: Application) : AndroidViewModel(application
     private val _initProgress = MutableStateFlow(0f)
     val initProgress: StateFlow<Float> = _initProgress.asStateFlow()
 
+    val totalCocktailsCount: StateFlow<Int> = repository.getCocktailCountFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     private val dbIngredients = repository.getAllIngredients()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -82,10 +85,12 @@ class CocktailViewModel(application: Application) : AndroidViewModel(application
             val countIngredients = repository.getIngredientCount()
             val countCocktails = try { repository.getCocktailCount() } catch (e: Exception) { 0 }
 
-            val totalExpectedIngredients = 488
-            val totalExpectedCocktails = 600
+            val prefs = application.getSharedPreferences("AlchiMixPrefs", android.content.Context.MODE_PRIVATE)
+            val isSyncComplete = prefs.getBoolean("is_sync_complete", false)
 
-            if (countIngredients >= totalExpectedIngredients && countCocktails >= totalExpectedCocktails) {
+            if ((isSyncComplete && countCocktails >= 600) || (countIngredients >= 488 && countCocktails >= 600)) {
+                if (!isSyncComplete) prefs.edit().putBoolean("is_sync_complete", true).apply()
+                
                 Log.d("VM", "Données déjà présentes (Ing: $countIngredients, Cocktails: $countCocktails). Lancement fake loading.")
                 for (i in 1..100) {
                     _initProgress.value = i / 100f
@@ -93,10 +98,10 @@ class CocktailViewModel(application: Application) : AndroidViewModel(application
                 }
                 _isAppReady.value = true
             } else {
-                Log.d("VM", "Téléchargement initial obligatoire.")
+                Log.d("VM", "Téléchargement initial obligatoire ou reprise.")
                 
                 // 1. Ingrédients de 0% à 50%
-                if (countIngredients < totalExpectedIngredients) {
+                if (countIngredients < 488) {
                     repository.syncAllPossibleIngredients(
                         onProgress = { _initProgress.value = it * 0.5f },
                         isBackground = false
@@ -105,8 +110,7 @@ class CocktailViewModel(application: Application) : AndroidViewModel(application
                     _initProgress.value = 0.5f
                 }
 
-                // 2. Cocktails de 50% à 100%
-                if (countCocktails < totalExpectedCocktails) {
+                if (countCocktails < 600) {
                     repository.syncAllPossibleCocktails(
                         onProgress = { _initProgress.value = 0.5f + (it * 0.5f) },
                         isBackground = false
@@ -115,6 +119,7 @@ class CocktailViewModel(application: Application) : AndroidViewModel(application
                     _initProgress.value = 1f
                 }
 
+                prefs.edit().putBoolean("is_sync_complete", true).apply()
                 _isAppReady.value = true
             }
         }
@@ -185,12 +190,14 @@ class CocktailViewModel(application: Application) : AndroidViewModel(application
             .map { it.name }.sorted()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val masteryStatus: StateFlow<String> = localState.map { state ->
-        val count = if (state is CocktailLocalState.Success) state.cocktails.size else 0
-        when {
-            count >= 50 -> "Grand Alchimiste 🧙‍♂️"
-            count >= 5 -> "Apprenti Alchimiste ⚗️"
-            else -> "Novice du Chaos 🧪"
+    val masteryStatus: StateFlow<String> = discoveredIngredients.map { discovered ->
+        when (discovered.size) {
+            in 0..10 -> "Novice du Chaos 🧪"
+            in 11..50 -> "Apprenti Alchimiste ⚗️"
+            in 51..150 -> "Souffleur de Verre 🔥"
+            in 151..300 -> "Maître des Essences ✨"
+            in 301..488 -> "Grand Alchimiste 🧙‍♂️"
+            else -> "DIEU DE L'ALCHIMIE 👑" // Pour 489 précisément (ou plus)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Novice du Chaos 🧪")
 

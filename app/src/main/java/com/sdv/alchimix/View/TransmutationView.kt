@@ -226,8 +226,8 @@ fun LaboratoireStation(
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
-                .border(1.dp, BrassGold.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
+                .background(Color(0xFF140F0A), RoundedCornerShape(20.dp))
+                .border(2.dp, BrassGold.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -298,7 +298,7 @@ fun AlchimiserButton(onTransmute: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "neon")
     val glowScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.05f,
+        targetValue = 1.15f,
         animationSpec = infiniteRepeatable(
             animation = tween(2000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -323,7 +323,7 @@ fun AlchimiserButton(onTransmute: () -> Unit) {
             onClick = onTransmute,
             modifier = Modifier
                 .size(140.dp)
-                .shadow(30.dp, CircleShape, spotColor = AlambicOrange),
+                .shadow(40.dp, CircleShape, spotColor = AlambicOrange),
             shape = CircleShape,
             color = Color.Transparent
         ) {
@@ -331,26 +331,31 @@ fun AlchimiserButton(onTransmute: () -> Unit) {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        Brush.verticalGradient(
-                            listOf(Color(0xFFE69110), Color(0xFF8B5A00))
+                        Brush.radialGradient(
+                            listOf(Color(0xFFE67300), Color(0xFF6B2400))
                         )
                     )
-                    .border(3.dp, BrassGold, CircleShape),
+                    .border(6.dp, BrassGold, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(12.dp).border(1.dp, Color(0xFFFFB366).copy(0.3f), CircleShape)
+                )
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = null,
-                        tint = Color.Black,
-                        modifier = Modifier.size(48.dp)
+                        tint = Color(0xFFFFE0B2),
+                        modifier = Modifier.size(54.dp)
                     )
                     Text(
                         text = "ALCHIMISER",
                         style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color.Black,
-                            letterSpacing = 1.sp
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFFFFD1A3),
+                            letterSpacing = 2.sp,
+                            fontSize = 14.sp,
+                            shadow = androidx.compose.ui.graphics.Shadow(color = Color.Black.copy(0.8f), blurRadius = 10f)
                         )
                     )
                 }

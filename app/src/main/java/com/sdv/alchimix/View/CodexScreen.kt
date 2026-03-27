@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
@@ -56,13 +57,50 @@ fun CodexScreen(
             .background(DarkBg)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "CODEX INGREDIA",
-                style = MaterialTheme.typography.headlineMedium,
-                color = BrassGold,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth()
-            )
+            val rank by viewModel.masteryStatus.collectAsStateWithLifecycle()
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "CODEX INGREDIA",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = BrassGold,
+                    fontWeight = FontWeight.Bold
+                )
+                val isUltimate = rank.contains("DIEU")
+                
+                val infiniteTransition = rememberInfiniteTransition(label = "glow")
+                val glowAlpha by infiniteTransition.animateFloat(
+                    initialValue = 0.3f,
+                    targetValue = 0.8f,
+                    animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
+                    label = "glowAlpha"
+                )
+
+                Surface(
+                    color = if (isUltimate) Color(0xFFFFD700).copy(alpha = 0.2f) else AlambicPurple.copy(alpha = 0.2f),
+                    border = BorderStroke(
+                        if (isUltimate) 2.dp else 1.dp, 
+                        if (isUltimate) Color(0xFFFFD700).copy(alpha = glowAlpha) else AlambicPurple.copy(alpha = 0.5f)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    shadowElevation = if (isUltimate) 8.dp else 0.dp
+                ) {
+                    Text(
+                        text = rank,
+                        color = if (isUltimate) Color(0xFFFFD700) else AlambicPurple,
+                        fontSize = if (isUltimate) 11.sp else 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = if (isUltimate) androidx.compose.ui.text.TextStyle(
+                            shadow = androidx.compose.ui.graphics.Shadow(Color(0xFF8B5A00), blurRadius = 10f)
+                        ) else androidx.compose.ui.text.TextStyle()
+                    )
+                }
+            }
             Text(
                 text = "Votre encyclopédie des éléments découverts",
                 style = MaterialTheme.typography.bodySmall,
@@ -102,6 +140,7 @@ fun CodexScreen(
 @Composable
 fun FormulesTab(viewModel: CocktailViewModel, onNavigateToFormula: (CocktailEntity) -> Unit) {
     val localState by viewModel.localState.collectAsStateWithLifecycle()
+    val totalCocktails by viewModel.totalCocktailsCount.collectAsStateWithLifecycle()
     var selectedRarity by remember { mutableStateOf<Rarity?>(null) }
     
     val allCocktails = (localState as? CocktailLocalState.Success)?.cocktails ?: emptyList()
@@ -124,7 +163,7 @@ fun FormulesTab(viewModel: CocktailViewModel, onNavigateToFormula: (CocktailEnti
                 ProgressBarCard(
                     label = "Grimoire des Formules",
                     current = allCocktails.size,
-                    total = 100,
+                    total = totalCocktails,
                     color = AlambicCyan
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -364,7 +403,12 @@ fun CocktailCard(cocktail: CocktailEntity, rarity: Rarity, onClick: () -> Unit) 
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.85f)
-            .border(2.dp, rarity.color.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+            .shadow(
+                elevation = if (rarity == Rarity.LEGENDARY || rarity == Rarity.EPIC) 16.dp else 4.dp,
+                spotColor = rarity.color,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .border(2.dp, rarity.color.copy(alpha = 0.8f), RoundedCornerShape(12.dp))
             .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = CardBg),
         shape = RoundedCornerShape(12.dp)
@@ -436,14 +480,20 @@ fun IngredientItem(name: String, isDiscovered: Boolean, rarity: Rarity, onClick:
             )
             if (!isDiscovered) {
                 Box(
-                    modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.2f)),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            androidx.compose.ui.graphics.Brush.radialGradient(
+                                listOf(Color(0xFF333333).copy(alpha = 0.7f), Color(0xFF111111).copy(alpha = 0.9f))
+                            )
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.7f),
-                        modifier = Modifier.size(18.dp)
+                        tint = BrassGold.copy(alpha = 0.8f),
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
