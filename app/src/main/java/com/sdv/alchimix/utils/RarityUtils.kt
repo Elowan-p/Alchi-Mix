@@ -55,10 +55,10 @@ sealed interface Rarity : Comparable<Rarity> {
             val normalizedScore = if (hashScore < 0) -hashScore else hashScore
 
             return when {
-                normalizedScore > 94 -> LEGENDARY
-                normalizedScore > 79 -> EPIC
-                normalizedScore > 49 -> RARE
-                else -> COMMON
+                normalizedScore > 96 -> LEGENDARY // 3% au lieu de 5%
+                normalizedScore > 86 -> EPIC      // 10% au lieu de 15%
+                normalizedScore > 59 -> RARE      // 27% au lieu de 30%
+                else -> COMMON                    // 60% au lieu de 50%
             }
         }
 
